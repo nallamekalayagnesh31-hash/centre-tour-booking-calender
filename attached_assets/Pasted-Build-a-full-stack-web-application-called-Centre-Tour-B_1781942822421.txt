@@ -1,0 +1,140 @@
+Build a full-stack web application called **"Centre Tour Booking Calendar"** for preschool admissions (FirstCry Intellitots use case).
+
+### 🎯 Objective:
+
+Create a system where parents can book a school visit (tour) by selecting a date and time, and the admin can manage all enquiries, follow-ups, and admissions through a dashboard.
+
+---
+
+### 👥 User Roles:
+
+1. Parent / Guardian
+2. Admin / Counsellor / Centre Head
+
+---
+
+### 🖥️ Frontend Requirements:
+
+Use **HTML, CSS, JavaScript (or React)**
+
+Create the following pages:
+
+1. **Home Page**
+
+   * Simple landing page with “Book a School Tour” button
+   * Preschool branding (colors, images, friendly UI)
+
+2. **Tour Booking Form (Main Feature)**
+
+   * Fields:
+
+     * Parent Name
+     * Phone Number
+     * Email
+     * Child Name
+     * Child Age
+     * Preferred Date (Calendar Picker)
+     * Preferred Time Slot (Dropdown)
+     * Message (Optional)
+   * Submit button
+   * Show success confirmation screen after submission
+
+3. **Dashboard (Admin Panel)**
+
+   * Table or cards showing:
+
+     * Parent Name
+     * Child Name
+     * Date & Time
+     * Status (Enquiry / Tour Scheduled / Completed / Admission Confirmed)
+     * Assigned Counsellor
+   * Filters:
+
+     * Date
+     * Status
+   * Buttons:
+
+     * Update Status
+     * View Details
+
+4. **Detail Page**
+
+   * Show full booking info
+   * Show history/status updates
+   * Notes section
+
+5. **Calendar View**
+
+   * Display booked slots visually
+   * Prevent double booking
+
+---
+
+### ⚙️ Backend Requirements:
+
+Use **Node.js (Express) OR Python (Flask)**
+
+Create APIs:
+
+* POST /create-booking → Save new booking
+* GET /bookings → Get all bookings
+* GET /booking/:id → Get single booking
+* POST /update-status → Update booking status
+* GET /calendar-slots → Available/Booked slots
+
+Include:
+
+* Input validation
+* Timestamp for each booking
+* Status workflow logic
+
+---
+
+### 🧠 Logic / Workflow:
+
+* When user submits form → Save as “Enquiry”
+* Admin updates:
+  Enquiry → Tour Scheduled → Demo → Follow-up → Admission Confirmed
+* Prevent booking same slot twice
+* Show alerts for upcoming tours
+
+---
+
+### 🗄️ Database:
+
+Use MySQL / PostgreSQL / Firebase
+
+Table: bookings
+Fields:
+
+* id
+* parent_name
+* phone
+* email
+* child_name
+* age
+* date
+* time_slot
+* status
+* assigned_to
+* created_at
+
+---
+
+### 📊 Extra Features:
+
+* Dashboard analytics (total bookings, confirmed admissions)
+* Notifications (success message / alerts)
+* Clean UI with cards, badges, and tables
+* Responsive design (mobile-friendly)
+
+---
+
+### 🚀 Final Output:
+
+* Working full-stack application
+* Connected frontend + backend
+* Dashboard + booking system
+* Clean UI + proper workflow
+
+Make the design modern, simple, and user-friendly for parents and school staff.

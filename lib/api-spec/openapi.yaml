@@ -1,0 +1,902 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Centre Tour Booking Calendar API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Staff authentication
+  - name: bookings
+    description: Tour booking operations
+  - name: dashboard
+    description: Admin dashboard and analytics
+
+paths:
+  /auth/login:
+    post:
+      operationId: staffLogin
+      tags: [auth]
+      summary: Staff login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffProfile"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /auth/logout:
+    post:
+      operationId: staffLogout
+      tags: [auth]
+      summary: Staff logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: registerStaff
+      tags: [auth]
+      summary: Register a new staff account (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Staff account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffProfile"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Not authorized (admin only)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: Username already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /auth/staff:
+    get:
+      operationId: listStaff
+      tags: [auth]
+      summary: List all staff accounts (admin only)
+      responses:
+        "200":
+          description: List of staff
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StaffProfile"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /auth/staff/{id}:
+    delete:
+      operationId: deleteStaff
+      tags: [auth]
+      summary: Delete a staff account (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /auth/staff/{id}/password:
+    put:
+      operationId: updateStaffPassword
+      tags: [auth]
+      summary: Update a staff account's password (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordUpdateInput"
+      responses:
+        "200":
+          description: Password updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current staff session
+      responses:
+        "200":
+          description: Current staff
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffProfile"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /bookings:
+    get:
+      operationId: listBookings
+      tags: [bookings]
+      summary: Get all bookings
+      description: Returns all tour bookings with optional filters
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: date
+          in: query
+          schema:
+            type: string
+        - name: counsellor
+          in: query
+          schema:
+            type: string
+        - name: phone
+          in: query
+          schema:
+            type: string
+        - name: email
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Create a new booking
+      description: Save a new tour booking as an enquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingInput"
+      responses:
+        "201":
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "400":
+          description: Validation error or slot already booked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: Slot already booked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /bookings/{id}:
+    get:
+      operationId: getBooking
+      tags: [bookings]
+      summary: Get a single booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Booking detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /bookings/{id}/status:
+    patch:
+      operationId: updateBookingStatus
+      tags: [bookings]
+      summary: Update booking status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StatusUpdate"
+      responses:
+        "200":
+          description: Updated booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /bookings/{id}/notes:
+    post:
+      operationId: addNote
+      tags: [bookings]
+      summary: Add a note to a booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteInput"
+      responses:
+        "201":
+          description: Note added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /calendar-slots:
+    get:
+      operationId: getCalendarSlots
+      tags: [bookings]
+      summary: Get available and booked slots
+      parameters:
+        - name: month
+          in: query
+          schema:
+            type: string
+          description: Month in YYYY-MM format
+      responses:
+        "200":
+          description: Calendar slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CalendarSlot"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard analytics
+      description: Total bookings, status breakdown, today's tours
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/upcoming:
+    get:
+      operationId: getUpcomingTours
+      tags: [dashboard]
+      summary: Get upcoming tours (next 7 days)
+      responses:
+        "200":
+          description: Upcoming tours
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+
+  /referral-rewards:
+    get:
+      operationId: listReferralRewards
+      tags: [dashboard]
+      summary: Get all referral rewards
+      responses:
+        "200":
+          description: List of referral rewards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReferralRewardResponse"
+
+  /referral-rewards/{id}/claim:
+    post:
+      operationId: claimReferralReward
+      tags: [dashboard]
+      summary: Mark a referral reward as claimed
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated referral reward
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReferralReward"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+        parentName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        childName:
+          type: string
+        childAge:
+          type: string
+        date:
+          type: string
+        timeSlot:
+          type: string
+        status:
+          type: string
+          enum: [enquiry, tour_scheduled, demo, follow_up, admission_confirmed, cancelled]
+        assignedTo:
+          type: ["string", "null"]
+        message:
+          type: ["string", "null"]
+        whatsapp:
+          type: ["string", "null"]
+        preferredClass:
+          type: ["string", "null"]
+        referralSource:
+          type: ["string", "null"]
+        followUpDate:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - parentName
+        - phone
+        - email
+        - childName
+        - childAge
+        - date
+        - timeSlot
+        - status
+        - createdAt
+        - updatedAt
+
+    BookingDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        parentName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        childName:
+          type: string
+        childAge:
+          type: string
+        date:
+          type: string
+        timeSlot:
+          type: string
+        status:
+          type: string
+          enum: [enquiry, tour_scheduled, demo, follow_up, admission_confirmed, cancelled]
+        assignedTo:
+          type: ["string", "null"]
+        message:
+          type: ["string", "null"]
+        whatsapp:
+          type: ["string", "null"]
+        preferredClass:
+          type: ["string", "null"]
+        referralSource:
+          type: ["string", "null"]
+        followUpDate:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        statusHistory:
+          type: array
+          items:
+            $ref: "#/components/schemas/StatusHistory"
+        notes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Note"
+        referralReward:
+          $ref: "#/components/schemas/ReferralReward"
+      required:
+        - id
+        - parentName
+        - phone
+        - email
+        - childName
+        - childAge
+        - date
+        - timeSlot
+        - status
+        - createdAt
+        - updatedAt
+        - statusHistory
+        - notes
+
+    BookingInput:
+      type: object
+      properties:
+        parentName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        childName:
+          type: string
+        childAge:
+          type: string
+        date:
+          type: string
+        timeSlot:
+          type: string
+        message:
+          type: string
+        whatsapp:
+          type: string
+        preferredClass:
+          type: string
+        referralSource:
+          type: string
+        referredByName:
+          type: string
+        referredByPhone:
+          type: string
+        referredByEmail:
+          type: string
+      required:
+        - parentName
+        - phone
+        - email
+        - childName
+        - childAge
+        - date
+        - timeSlot
+
+    StatusUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [enquiry, tour_scheduled, demo, follow_up, admission_confirmed, cancelled]
+        assignedTo:
+          type: string
+        note:
+          type: string
+        followUpDate:
+          type: string
+      required:
+        - status
+
+    NoteInput:
+      type: object
+      properties:
+        content:
+          type: string
+        author:
+          type: string
+      required:
+        - content
+        - author
+
+    Note:
+      type: object
+      properties:
+        id:
+          type: integer
+        bookingId:
+          type: integer
+        content:
+          type: string
+        author:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - bookingId
+        - content
+        - author
+        - createdAt
+
+    StatusHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+        bookingId:
+          type: integer
+        fromStatus:
+          type: ["string", "null"]
+        toStatus:
+          type: string
+        changedBy:
+          type: string
+        note:
+          type: ["string", "null"]
+        changedAt:
+          type: string
+      required:
+        - id
+        - bookingId
+        - toStatus
+        - changedBy
+        - changedAt
+
+    CalendarSlot:
+      type: object
+      properties:
+        date:
+          type: string
+        timeSlot:
+          type: string
+        isBooked:
+          type: boolean
+        bookingId:
+          type: ["integer", "null"]
+        parentName:
+          type: ["string", "null"]
+        childName:
+          type: ["string", "null"]
+      required:
+        - date
+        - timeSlot
+        - isBooked
+
+    DashboardStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        enquiries:
+          type: integer
+        tourScheduled:
+          type: integer
+        demo:
+          type: integer
+        followUp:
+          type: integer
+        admissionConfirmed:
+          type: integer
+        cancelled:
+          type: integer
+        todayTours:
+          type: integer
+        thisWeekTours:
+          type: integer
+      required:
+        - total
+        - enquiries
+        - tourScheduled
+        - demo
+        - followUp
+        - admissionConfirmed
+        - cancelled
+        - todayTours
+        - thisWeekTours
+
+    LoginInput:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+
+    RegisterInput:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [admin, counsellor, centre_head]
+      required:
+        - username
+        - password
+        - name
+        - role
+
+    PasswordUpdateInput:
+      type: object
+      properties:
+        password:
+          type: string
+      required:
+        - password
+
+    StaffProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [admin, counsellor, centre_head]
+      required:
+        - id
+        - username
+        - name
+        - role
+
+    ReferralReward:
+      type: object
+      properties:
+        id:
+          type: integer
+        bookingId:
+          type: integer
+        referrerName:
+          type: string
+        referrerPhone:
+          type: string
+        referrerEmail:
+          type: ["string", "null"]
+        rewardStatus:
+          type: string
+          enum: [pending, eligible, claimed]
+        rewardDetails:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - bookingId
+        - referrerName
+        - referrerPhone
+        - rewardStatus
+        - createdAt
+        - updatedAt
+
+    ReferralRewardResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        bookingId:
+          type: integer
+        referrerName:
+          type: string
+        referrerPhone:
+          type: string
+        referrerEmail:
+          type: ["string", "null"]
+        rewardStatus:
+          type: string
+          enum: [pending, eligible, claimed]
+        rewardDetails:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        refereeParentName:
+          type: string
+        refereeChildName:
+          type: string
+        refereeStatus:
+          type: string
+        refereeDate:
+          type: string
+      required:
+        - id
+        - bookingId
+        - referrerName
+        - referrerPhone
+        - rewardStatus
+        - createdAt
+        - updatedAt
+        - refereeParentName
+        - refereeChildName
+        - refereeStatus
+        - refereeDate

@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "-fqX9huxU8PzD3hEW1dTP"
+uri = "file://centre-tour-booking.tar.gz"
+type = "unspecified"
+title = "Centre Tour Booking Calendar — Full Source Code"
