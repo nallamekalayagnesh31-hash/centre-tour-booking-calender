@@ -10,6 +10,7 @@ export interface CalendarSlot {
   date: string;
   timeSlot: string;
   isBooked: boolean;
+  bookingsCount: number;
   /** @nullable */
   bookingId?: number | null;
   /** @nullable */

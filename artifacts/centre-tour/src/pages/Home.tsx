@@ -1,9 +1,18 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { useListBookings, useGetBooking, getListBookingsQueryKey } from "@workspace/api-client-react";
+import { useListBookings, useGetBooking, useDeleteBooking, getListBookingsQueryKey } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { 
   ShieldCheck, 
   Heart, 
@@ -19,10 +28,12 @@ import {
   Clock, 
   MessageSquare, 
   Phone, 
-  Mail 
+  Mail,
+  Trash2
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { StatusBadge } from "@/components/StatusBadge";
+import { useToast } from "@/hooks/use-toast";
 
 function BookingDetailsExpanded({ id }: { id: number }) {
   const { data: booking, isLoading, error } = useGetBooking(id);
@@ -51,9 +62,9 @@ function BookingDetailsExpanded({ id }: { id: number }) {
           <Phone className="w-4 h-4 text-primary/70" />
           <span className="font-medium text-foreground">{booking.phone}</span>
         </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Mail className="w-4 h-4 text-primary/70" />
-          <span className="font-medium text-foreground">{booking.email}</span>
+        <div className="flex items-center gap-2 text-muted-foreground min-w-0">
+          <Mail className="w-4 h-4 text-primary/70 shrink-0" />
+          <span className="font-medium text-foreground break-all">{booking.email}</span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
           <MessageSquare className="w-4 h-4 text-emerald-500" />
@@ -150,6 +161,27 @@ export function Home() {
   const [submittedQuery, setSubmittedQuery] = useState("");
   const [isSearched, setIsSearched] = useState(false);
   const [expandedBookingId, setExpandedBookingId] = useState<number | null>(null);
+  const [deleteBookingId, setDeleteBookingId] = useState<number | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const deleteBooking = useDeleteBooking({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListBookingsQueryKey(queryParams || {}) });
+        setDeleteBookingId(null);
+        toast({ title: "Booking cancelled", description: "Your booking has been successfully deleted." });
+      },
+      onError: (err: any) => {
+        setDeleteBookingId(null);
+        toast({
+          title: "Failed to delete booking",
+          description: err?.data?.error || err?.message || "Please try again later.",
+          variant: "destructive",
+        });
+      },
+    },
+  });
 
   // Determine if searching by email or phone
   const isEmail = submittedQuery.includes("@");
@@ -297,22 +329,33 @@ export function Home() {
                             <span className="text-[11px] text-muted-foreground">
                               Click "View Details" to see status logs & counsellor notes
                             </span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-primary hover:text-primary hover:bg-primary/5 text-xs font-semibold rounded-lg flex items-center gap-1 px-3 py-1.5 h-auto"
-                              onClick={() => setExpandedBookingId(expandedBookingId === b.id ? null : b.id)}
-                            >
-                              {expandedBookingId === b.id ? (
-                                <>
-                                  Hide Details <ChevronUp className="w-3.5 h-3.5" />
-                                </>
-                              ) : (
-                                <>
-                                  View Details <ChevronDown className="w-3.5 h-3.5" />
-                                </>
-                              )}
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/5 text-xs font-semibold rounded-lg flex items-center gap-1 px-3 py-1.5 h-auto"
+                                onClick={() => setDeleteBookingId(b.id)}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                Delete
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-primary hover:text-primary hover:bg-primary/5 text-xs font-semibold rounded-lg flex items-center gap-1 px-3 py-1.5 h-auto"
+                                onClick={() => setExpandedBookingId(expandedBookingId === b.id ? null : b.id)}
+                              >
+                                {expandedBookingId === b.id ? (
+                                  <>
+                                    Hide Details <ChevronUp className="w-3.5 h-3.5" />
+                                  </>
+                                ) : (
+                                  <>
+                                    View Details <ChevronDown className="w-3.5 h-3.5" />
+                                  </>
+                                )}
+                              </Button>
+                            </div>
                           </div>
 
                           {expandedBookingId === b.id && (
@@ -334,6 +377,41 @@ export function Home() {
             </Card>
           </div>
         </section>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={deleteBookingId !== null} onOpenChange={(open) => !open && setDeleteBookingId(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-destructive">
+                <Trash2 className="w-5 h-5" />
+                Cancel Booking
+              </DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this booking? This action cannot be undone and all associated data (status history and notes) will be permanently removed.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteBookingId(null)}
+                disabled={deleteBooking.isPending}
+              >
+                Keep Booking
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => deleteBookingId !== null && deleteBooking.mutate({ id: deleteBookingId })}
+                disabled={deleteBooking.isPending}
+              >
+                {deleteBooking.isPending ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Deleting...</>
+                ) : (
+                  <><Trash2 className="w-4 h-4 mr-2" /> Yes, Delete Booking</>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Features/Trust Section */}
         <section className="py-24 bg-transparent">

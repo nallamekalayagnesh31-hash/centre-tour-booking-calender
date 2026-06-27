@@ -59,7 +59,7 @@ export function CalendarView() {
         </div>
 
         <Card className="shadow-sm">
-          <div className="p-4 border-b flex items-center justify-between bg-white">
+          <div className="p-4 border-b flex items-center justify-between bg-card">
             <h2 className="text-xl font-semibold flex items-center gap-2">
               <CalendarIcon className="w-5 h-5 text-primary" />
               {format(currentDate, "MMMM yyyy")}
@@ -78,11 +78,11 @@ export function CalendarView() {
           </div>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="h-[600px] flex items-center justify-center bg-white">
+              <div className="h-[600px] flex items-center justify-center bg-card">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
             ) : (
-              <div className="bg-white">
+              <div className="bg-card">
                 {/* Day Names Header */}
                 <div className="grid grid-cols-7 border-b bg-muted/30">
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
@@ -115,7 +115,7 @@ export function CalendarView() {
                       >
                         <div className="flex items-center justify-between mb-2">
                           <span className={cn(
-                            "text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full",
+                            "text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full text-foreground",
                             isToday(day) && "bg-primary text-primary-foreground"
                           )}>
                             {format(day, "d")}
@@ -132,9 +132,9 @@ export function CalendarView() {
                             <HoverCard key={i}>
                               <HoverCardTrigger asChild>
                                 <Link href={slot.bookingId ? `/admin/bookings/${slot.bookingId}` : "#"}>
-                                  <div className="text-xs p-1.5 rounded bg-primary/10 text-primary-foreground border border-primary/20 truncate cursor-pointer hover:bg-primary hover:text-white transition-colors">
-                                    <span className="font-semibold text-primary/80 group-hover:text-white mr-1">{slot.timeSlot}</span>
-                                    {slot.parentName}
+                                  <div className="text-xs p-1.5 rounded bg-primary/10 text-foreground border border-primary/20 truncate cursor-pointer hover:bg-primary hover:text-white transition-colors">
+                                     <span className="font-semibold text-primary mr-1">{slot.timeSlot}</span>
+                                     {slot.parentName}
                                   </div>
                                 </Link>
                               </HoverCardTrigger>

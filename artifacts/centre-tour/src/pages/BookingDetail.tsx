@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { 
   useGetBooking, 
   useUpdateBookingStatus, 
   useAddNote, 
-  getGetBookingQueryKey 
+  getGetBookingQueryKey,
+  useDeleteBooking
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -13,17 +14,27 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StatusBadge } from "@/components/StatusBadge";
-import { ArrowLeft, Phone, Mail, Clock, Calendar, Baby, User, MapPin, Loader2, Send, MessageSquare, Sparkles, Copy, Check, FileText } from "lucide-react";
+import { ArrowLeft, Phone, Mail, Clock, Calendar, Baby, User, MapPin, Loader2, Send, MessageSquare, Sparkles, Copy, Check, FileText, Trash2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export function BookingDetail({ id: propId }: { id?: number }) {
   const params = useParams<{ id: string }>();
   const id = propId ?? (params?.id ? parseInt(params.id, 10) : 0);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const [, setLocation] = useLocation();
 
   const { data: booking, isLoading } = useGetBooking(id, { query: { enabled: !!id, queryKey: getGetBookingQueryKey(id) }});
   
@@ -33,6 +44,23 @@ export function BookingDetail({ id: propId }: { id?: number }) {
         queryClient.invalidateQueries({ queryKey: getGetBookingQueryKey(id) });
         toast({ title: "Status updated successfully" });
         setIsUpdating(false);
+      }
+    }
+  });
+
+  const deleteBooking = useDeleteBooking({
+    mutation: {
+      onSuccess: () => {
+        toast({ title: "Booking deleted successfully" });
+        queryClient.invalidateQueries();
+        setLocation("/staff/dashboard");
+      },
+      onError: (err: any) => {
+        toast({
+          title: "Delete Failed",
+          description: err?.data?.error || err?.message || "Failed to delete booking",
+          variant: "destructive",
+        });
       }
     }
   });
@@ -48,6 +76,7 @@ export function BookingDetail({ id: propId }: { id?: number }) {
   });
 
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [newStatus, setNewStatus] = useState<string>("");
   const [statusNote, setStatusNote] = useState("");
   const [counsellor, setCounsellor] = useState("");
@@ -413,6 +442,14 @@ export function BookingDetail({ id: propId }: { id?: number }) {
               <Button onClick={() => setIsUpdating(!isUpdating)} variant={isUpdating ? "outline" : "default"}>
                 {isUpdating ? "Cancel Update" : "Update Status"}
               </Button>
+              <Button 
+                onClick={() => setShowDeleteConfirm(true)} 
+                variant="outline" 
+                className="text-destructive hover:bg-destructive hover:text-destructive-foreground gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Booking
+              </Button>
             </div>
           </div>
         </div>
@@ -500,11 +537,11 @@ export function BookingDetail({ id: propId }: { id?: number }) {
                   </p>
                   <p className="font-medium text-foreground">{booking.phone}</p>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <p className="text-sm text-muted-foreground flex items-center gap-2">
                     <Mail className="w-3.5 h-3.5" /> Email
                   </p>
-                  <p className="font-medium text-foreground">{booking.email}</p>
+                  <p className="font-medium text-foreground break-all">{booking.email}</p>
                 </div>
                 <div className="space-y-2 flex flex-col justify-between">
                   <div>
@@ -730,11 +767,11 @@ export function BookingDetail({ id: propId }: { id?: number }) {
                 </div>
 
                 {/* Send Notifications */}
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-3 pt-1">
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="w-full text-xs font-semibold h-9 rounded-lg border-emerald-500/20 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-800 disabled:opacity-60"
+                    className="w-full text-xs font-semibold h-9 rounded-lg border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-950 text-emerald-700 hover:text-emerald-800 disabled:opacity-60"
                     onClick={handleSendWhatsApp}
                     disabled={isSendingWhatsApp || !aiData.whatsapp}
                   >
@@ -746,7 +783,7 @@ export function BookingDetail({ id: propId }: { id?: number }) {
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="w-full text-xs font-semibold h-9 rounded-lg border-blue-500/20 hover:bg-blue-50 text-blue-700 hover:text-blue-800 disabled:opacity-60"
+                    className="w-full text-xs font-semibold h-9 rounded-lg border-blue-500/30 hover:bg-blue-50 dark:hover:bg-blue-950 text-blue-700 hover:text-blue-800 disabled:opacity-60"
                     onClick={handleSendEmail}
                     disabled={isSendingEmail || !aiData.email}
                   >
@@ -815,10 +852,41 @@ export function BookingDetail({ id: propId }: { id?: number }) {
                 )}
               </CardContent>
             </Card>
-          </div>
-
         </div>
       </div>
+    </div>
+
+      {/* Delete Booking Confirmation Dialog */}
+      <Dialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+      >
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-destructive flex items-center gap-2">
+              <Trash2 className="w-5 h-5" />
+              Delete Booking
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the booking for <strong>{booking.parentName}</strong>? This action is permanent and cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleteBooking.isPending}
+              onClick={() => {
+                deleteBooking.mutate({ id });
+              }}
+            >
+              {deleteBooking.isPending ? "Deleting..." : "Yes, Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

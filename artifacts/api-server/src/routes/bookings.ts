@@ -88,7 +88,7 @@ router.post(["/bookings", "/create-booking"], async (req, res) => {
 
   const data = parseResult.data;
 
-  // Check for double booking
+  // Check for capacity limit (max 10 bookings per slot)
   const existing = await db
     .select()
     .from(bookingsTable)
@@ -98,11 +98,10 @@ router.post(["/bookings", "/create-booking"], async (req, res) => {
         eq(bookingsTable.timeSlot, data.timeSlot),
         sql`${bookingsTable.status} != 'cancelled'`
       )
-    )
-    .limit(1);
+    );
 
-  if (existing.length > 0) {
-    res.status(409).json({ error: "This time slot is already booked. Please choose a different slot." });
+  if (existing.length >= 10) {
+    res.status(409).json({ error: "This time slot is fully booked. Please choose a different slot." });
     return;
   }
 
@@ -449,6 +448,7 @@ router.get("/calendar-slots", async (req, res) => {
     date: string;
     timeSlot: string;
     isBooked: boolean;
+    bookingsCount: number;
     bookingId: number | null;
     parentName: string | null;
     childName: string | null;
@@ -460,16 +460,17 @@ router.get("/calendar-slots", async (req, res) => {
     if (dayOfWeek === 0 || dayOfWeek === 6) continue; // Skip weekends
 
     for (const slot of TIME_SLOTS) {
-      const booked = bookedSlots.find(
+      const slotBookings = bookedSlots.filter(
         (b) => b.date === dateStr && b.timeSlot === slot
       );
       slots.push({
         date: dateStr,
         timeSlot: slot,
-        isBooked: !!booked,
-        bookingId: booked?.id ?? null,
-        parentName: booked?.parentName ?? null,
-        childName: booked?.childName ?? null,
+        isBooked: slotBookings.length >= 10,
+        bookingsCount: slotBookings.length,
+        bookingId: slotBookings[0]?.id ?? null,
+        parentName: slotBookings[0]?.parentName ?? null,
+        childName: slotBookings[0]?.childName ?? null,
       });
     }
   }
@@ -623,6 +624,32 @@ router.post("/bookings/:id/send-email", async (req, res) => {
   }
 
   res.json({ success: true, messageId: result.messageId });
+});
+
+// DELETE /bookings/:id
+router.delete("/bookings/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid booking ID" });
+    return;
+  }
+
+  // Check if booking exists
+  const existing = await db
+    .select()
+    .from(bookingsTable)
+    .where(eq(bookingsTable.id, id))
+    .limit(1);
+
+  if (existing.length === 0) {
+    res.status(404).json({ error: "Booking not found" });
+    return;
+  }
+
+  // Delete the booking (references will cascade delete)
+  await db.delete(bookingsTable).where(eq(bookingsTable.id, id));
+
+  res.json({ status: "ok" });
 });
 
 export default router;

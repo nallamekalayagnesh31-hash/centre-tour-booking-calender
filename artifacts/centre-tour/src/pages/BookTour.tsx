@@ -117,12 +117,20 @@ export function BookTour() {
   };
 
   const getSlotStatus = (slot: string) => {
-    if (!selectedDate || !slots) return { isBooked: false, label: "1 slot available" };
+    if (!selectedDate || !slots) return { isBooked: false, label: "10 slots available" };
     const dateStr = format(selectedDate, "yyyy-MM-dd");
-    const booked = slots.some((s) => s.date === dateStr && s.timeSlot === slot && s.isBooked);
+    const slotInfo = slots.find((s) => s.date === dateStr && s.timeSlot === slot);
+    
+    if (!slotInfo) {
+      return { isBooked: false, label: "10 slots available" };
+    }
+    
+    const count = slotInfo.bookingsCount ?? 0;
+    const available = Math.max(0, 10 - count);
+    
     return {
-      isBooked: booked,
-      label: booked ? "Fully Booked" : "1 slot available",
+      isBooked: count >= 10,
+      label: count >= 10 ? "Fully Booked" : `${available} slot${available > 1 ? "s" : ""} available`,
     };
   };
 
@@ -331,6 +339,16 @@ export function BookTour() {
                               <SelectItem value="2-3 yrs">2 - 3 Years</SelectItem>
                               <SelectItem value="3-4 yrs">3 - 4 Years</SelectItem>
                               <SelectItem value="4-5 yrs">4 - 5 Years</SelectItem>
+                              <SelectItem value="5-6 yrs">5 - 6 Years</SelectItem>
+                              <SelectItem value="6-7 yrs">6 - 7 Years</SelectItem>
+                              <SelectItem value="7-8 yrs">7 - 8 Years</SelectItem>
+                              <SelectItem value="8-9 yrs">8 - 9 Years</SelectItem>
+                              <SelectItem value="9-10 yrs">9 - 10 Years</SelectItem>
+                              <SelectItem value="10-11 yrs">10 - 11 Years</SelectItem>
+                              <SelectItem value="11-12 yrs">11 - 12 Years</SelectItem>
+                              <SelectItem value="12-13 yrs">12 - 13 Years</SelectItem>
+                              <SelectItem value="13-14 yrs">13 - 14 Years</SelectItem>
+                              <SelectItem value="14-15 yrs">14 - 15 Years</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -360,6 +378,11 @@ export function BookTour() {
                               <SelectItem value="3rd Class">3rd Class</SelectItem>
                               <SelectItem value="4th Class">4th Class</SelectItem>
                               <SelectItem value="5th Class">5th Class</SelectItem>
+                              <SelectItem value="6th Class">6th Class</SelectItem>
+                              <SelectItem value="7th Class">7th Class</SelectItem>
+                              <SelectItem value="8th Class">8th Class</SelectItem>
+                              <SelectItem value="9th Class">9th Class</SelectItem>
+                              <SelectItem value="10th Class">10th Class</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />

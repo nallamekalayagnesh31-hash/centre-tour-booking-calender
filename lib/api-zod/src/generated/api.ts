@@ -215,6 +215,18 @@ export const GetBookingResponse = zod.object({
 
 
 /**
+ * @summary Delete a booking
+ */
+export const DeleteBookingParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteBookingResponse = zod.object({
+  "status": zod.string()
+})
+
+
+/**
  * @summary Update booking status
  */
 export const UpdateBookingStatusParams = zod.object({
@@ -273,6 +285,7 @@ export const GetCalendarSlotsResponseItem = zod.object({
   "date": zod.string(),
   "timeSlot": zod.string(),
   "isBooked": zod.boolean(),
+  "bookingsCount": zod.number(),
   "bookingId": zod.number().nullish(),
   "parentName": zod.string().nullish(),
   "childName": zod.string().nullish()

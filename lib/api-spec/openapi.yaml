@@ -331,6 +331,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+    delete:
+      operationId: deleteBooking
+      tags: [bookings]
+      summary: Delete a booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Booking deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 
   /bookings/{id}/status:
     patch:
@@ -729,6 +752,8 @@ components:
           type: string
         isBooked:
           type: boolean
+        bookingsCount:
+          type: integer
         bookingId:
           type: ["integer", "null"]
         parentName:
@@ -739,6 +764,7 @@ components:
         - date
         - timeSlot
         - isBooked
+        - bookingsCount
 
     DashboardStats:
       type: object
