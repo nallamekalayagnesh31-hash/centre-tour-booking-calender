@@ -5,10 +5,11 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": null,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index" }
+    { "source": "/api/(.*)", "destination": "/api/[...all]" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/index.ts": {
+    "api/[...all].ts": {
       "maxDuration": 30
     }
   },
