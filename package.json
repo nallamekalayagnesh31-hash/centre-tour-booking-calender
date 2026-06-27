@@ -8,6 +8,7 @@
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
     "build:vercel": "pnpm --filter @workspace/db exec tsc --build && pnpm --filter @workspace/api-zod exec tsc --build && pnpm --filter @workspace/api-client-react exec tsc --build && pnpm --filter centre-tour run build && cp -r artifacts/centre-tour/dist .",
+    "build:render": "pnpm --filter @workspace/db exec tsc --build && pnpm --filter @workspace/api-zod exec tsc --build && pnpm --filter @workspace/api-client-react exec tsc --build && pnpm --filter centre-tour run build && pnpm --filter @workspace/api-server run build",
     "start": "pnpm --filter @workspace/api-server start"
   },
   "private": true,

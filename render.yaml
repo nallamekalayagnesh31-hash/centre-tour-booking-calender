@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: centre-tour-booking-calender
+    runtime: node
+    plan: free
+    buildCommand: pnpm install --frozen-lockfile && pnpm -w run build:render
+    startCommand: pnpm -w run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
