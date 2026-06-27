@@ -1,11 +1,10 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "noEmit": false
+    "noEmit": false,
+    "allowJs": true
   },
   "include": [
-    "./**/*.ts",
-    "../artifacts/api-server/src/**/*.ts",
-    "../artifacts/api-server/src/types/**/*.d.ts"
+    "./**/*.ts"
   ]
 }
