@@ -5,13 +5,9 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": null,
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://centre-tour-booking-calender.onrender.com/api/$1" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
-  "functions": {
-    "api/[...all].ts": {
-      "maxDuration": 30
-    }
-  },
   "env": {
     "NODE_ENV": "production"
   }
