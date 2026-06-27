@@ -165,9 +165,18 @@ export function Home() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Determine if searching by email or phone (must be above useDeleteBooking to avoid stale closure)
+  const isEmail = submittedQuery.includes("@");
+  const queryParams = submittedQuery
+    ? isEmail
+      ? { email: submittedQuery }
+      : { phone: submittedQuery }
+    : null;
+
   const deleteBooking = useDeleteBooking({
     mutation: {
       onSuccess: () => {
+        // Invalidate all booking list queries so the deleted booking disappears
         queryClient.invalidateQueries({ queryKey: getListBookingsQueryKey(queryParams || {}) });
         setDeleteBookingId(null);
         toast({ title: "Booking cancelled", description: "Your booking has been successfully deleted." });
@@ -182,14 +191,6 @@ export function Home() {
       },
     },
   });
-
-  // Determine if searching by email or phone
-  const isEmail = submittedQuery.includes("@");
-  const queryParams = submittedQuery
-    ? isEmail
-      ? { email: submittedQuery }
-      : { phone: submittedQuery }
-    : null;
 
   const { data: bookings, isLoading } = useListBookings(
     queryParams || {},
