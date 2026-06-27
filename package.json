@@ -6,7 +6,8 @@
     "preinstall": "node -e \"if (!/pnpm/.test(process.env.npm_config_user_agent || '')) { console.error('Use pnpm instead'); process.exit(1); }\"",
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
     "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
+    "build:vercel": "pnpm --filter @workspace/db exec tsc --build && pnpm --filter @workspace/api-zod exec tsc --build && pnpm --filter @workspace/api-client-react exec tsc --build && pnpm --filter centre-tour run build && cp -r artifacts/centre-tour/dist ."
   },
   "private": true,
   "devDependencies": {
