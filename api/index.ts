@@ -5,5 +5,5 @@ import app from "../artifacts/api-server/src/app";
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   // Vercel passes the request to Express
-  return app(req as any, res as any);
+  return (app as any)(req, res);
 }
