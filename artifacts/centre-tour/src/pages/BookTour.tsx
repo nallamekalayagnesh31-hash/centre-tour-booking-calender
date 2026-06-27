@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod/v3";
+import * as z from "zod";
 import { useCreateBooking, useGetCalendarSlots } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -70,7 +70,7 @@ export function BookTour() {
   const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
   
   const form = useForm<BookingFormValues>({
-    resolver: zodResolver(bookingSchema),
+    resolver: zodResolver(bookingSchema as any),
     defaultValues: {
       parentName: "",
       phone: "",

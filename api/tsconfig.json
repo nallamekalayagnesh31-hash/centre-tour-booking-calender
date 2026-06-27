@@ -3,5 +3,9 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "include": ["./**/*.ts"]
+  "include": [
+    "./**/*.ts",
+    "../artifacts/api-server/src/**/*.ts",
+    "../artifacts/api-server/src/types/**/*.d.ts"
+  ]
 }
