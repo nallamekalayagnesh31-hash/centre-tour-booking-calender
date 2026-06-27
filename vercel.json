@@ -1,7 +1,7 @@
 {
   "version": 2,
   "buildCommand": "pnpm install --frozen-lockfile && pnpm --filter @workspace/db exec tsc --build && pnpm --filter @workspace/api-zod exec tsc --build && pnpm --filter @workspace/api-client-react exec tsc --build && pnpm --filter centre-tour run build",
-  "outputDirectory": "artifacts/centre-tour/dist/public",
+  "outputDirectory": "artifacts/centre-tour/dist",
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": null,
   "rewrites": [

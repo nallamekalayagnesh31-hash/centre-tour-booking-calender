@@ -43,11 +43,21 @@ export default defineConfig({
   },
   root: path.resolve(import.meta.dirname),
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    outDir: path.resolve(import.meta.dirname, "dist"),
     emptyOutDir: true,
     sourcemap: false,
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
+      onwarn(warning, warn) {
+        // Suppress sourcemap warnings from "use client" directives in shadcn/ui components
+        if (
+          warning.code === "SOURCEMAP_ERROR" ||
+          (warning.message && warning.message.includes("sourcemap"))
+        ) {
+          return;
+        }
+        warn(warning);
+      },
       output: {
         manualChunks: {
           "vendor-react": ["react", "react-dom"],
