@@ -4,6 +4,9 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
+// import.meta.dirname can be undefined in some TS configs — assert it here once.
+const __dir = import.meta.dirname as string;
+
 const rawPort = process.env.PORT || "5173"; // default port for development
 
 const port = Number(rawPort);
@@ -25,7 +28,7 @@ export default defineConfig({
       ? [
           await import("@replit/vite-plugin-cartographer").then((m) =>
             m.cartographer({
-              root: path.resolve(import.meta.dirname, ".."),
+              root: path.resolve(__dir, ".."),
             }),
           ),
           await import("@replit/vite-plugin-dev-banner").then((m) =>
@@ -36,14 +39,14 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path.resolve(import.meta.dirname, "src"),
-      "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
+      "@": path.resolve(__dir, "src"),
+      "@assets": path.resolve(__dir, "..", "..", "attached_assets"),
     },
-    dedupe: ["react", "react-dom"],
+    dedupe: ["react", "react-dom", "zod"],
   },
-  root: path.resolve(import.meta.dirname),
+  root: path.resolve(__dir),
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist"),
+    outDir: path.resolve(__dir, "dist"),
     emptyOutDir: true,
     sourcemap: false,
     chunkSizeWarningLimit: 1000,
