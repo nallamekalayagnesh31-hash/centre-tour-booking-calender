@@ -4,7 +4,8 @@ services:
     runtime: node
     plan: free
     buildCommand: pnpm install --frozen-lockfile && pnpm -w run build:render
-    startCommand: pnpm -w run start
+    # start:render runs: drizzle-kit push (create tables) -> seed (create staff users) -> start server
+    startCommand: pnpm -w run start:render
     envVars:
       - key: NODE_ENV
         value: production
@@ -13,4 +14,5 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       - key: DATABASE_URL
+        # REQUIRED: Set this to your PostgreSQL connection string in the Render dashboard
         sync: false
