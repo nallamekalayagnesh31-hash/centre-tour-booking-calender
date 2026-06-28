@@ -52,7 +52,7 @@ app.use("/api", router);
 if (process.env.NODE_ENV === "production") {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-  const frontendDist = path.resolve(__dirname, "../../artifacts/centre-tour/dist");
+  const frontendDist = path.resolve(__dirname, "../../../artifacts/centre-tour/dist");
 
   app.use(express.static(frontendDist));
 
