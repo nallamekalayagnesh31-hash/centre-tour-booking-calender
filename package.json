@@ -2,6 +2,10 @@
   "name": "workspace",
   "version": "0.0.0",
   "license": "MIT",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "pnpm@11.8.0",
   "scripts": {
     "dev": "node run-dev.js",
     "preinstall": "node -e \"if (!/pnpm/.test(process.env.npm_config_user_agent || '')) { console.error('Use pnpm instead'); process.exit(1); }\"",
